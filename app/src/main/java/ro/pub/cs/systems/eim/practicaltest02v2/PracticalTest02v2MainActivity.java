@@ -15,6 +15,8 @@ public class PracticalTest02v2MainActivity extends AppCompatActivity {
 
     private Button sendButton;
     private TextView resultTextView;
+
+    private ServerThread serverThread = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,5 +29,29 @@ public class PracticalTest02v2MainActivity extends AppCompatActivity {
         resultTextView = findViewById(R.id.result_text_view);
 
 
+        sendButton.setOnClickListener(view -> {
+            String port = portEditText.getText().toString();
+            String address = addressEditText.getText().toString();
+            int result = serverThread.getData();
+            if (port.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Server port should be filled!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            serverThread = new ServerThread(Integer.parseInt(port));
+            serverThread.start();
+            Toast.makeText(getApplicationContext(), "Server started on port " + port, Toast.LENGTH_SHORT).show();
+
+            resultTextView.setText("");
+            new ClientTask(address, Integer.parseInt(port), result, resultTextView).execute();
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (serverThread != null) {
+            serverThread.stopServer();
+        }
+        super.onDestroy();
     }
 }
